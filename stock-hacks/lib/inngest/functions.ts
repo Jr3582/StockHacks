@@ -6,6 +6,7 @@ import { success } from "better-auth";
 import { getNews } from "../actions/finnhub.actions";
 import { getWatchlistSymbolsByEmail } from "../actions/watchlist.actions";
 import { getFormattedTodayDate } from "../utils";
+import { createHash } from 'node:crypto';
 
 export const sendSignUpEmail = inngest.createFunction(
     {id: 'sign-up-email'},
@@ -93,11 +94,6 @@ export const sendDailyNewsSummary = inngest.createFunction(
         for (const { user, articles } of results) {
                 try {
                     const prompt = NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(articles, null, 2));
-
-// At the top of the file with other imports:
-import { createHash } from 'node:crypto';
-
-// ... other code ...
 
                     const key = createHash('sha256').update(user.email).digest('hex').slice(0, 8);
                     const response = await step.ai.infer(`summarize-news-${key}`, {
