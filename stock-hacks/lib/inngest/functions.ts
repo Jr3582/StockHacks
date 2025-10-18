@@ -94,7 +94,13 @@ export const sendDailyNewsSummary = inngest.createFunction(
                 try {
                     const prompt = NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(articles, null, 2));
 
-                    const response = await step.ai.infer(`summarize-news-${user.email}`, {
+// At the top of the file with other imports:
+import { createHash } from 'node:crypto';
+
+// ... other code ...
+
+                    const key = createHash('sha256').update(user.email).digest('hex').slice(0, 8);
+                    const response = await step.ai.infer(`summarize-news-${key}`, {
                         model: step.ai.models.gemini({ model: 'gemini-2.5-flash-lite' }),
                         body: {
                             contents: [{ role: 'user', parts: [{ text:prompt }]}]
