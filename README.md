@@ -39,7 +39,7 @@ GEMINI_API_KEY=your_gemini_api_key
 NODEMAILER_EMAIL=your_nodemailer_email
 NODEMAILER_PASSWORD=your_nodemailer_password
 NEXT_PUBLIC_FINNHUB_API_KEY=your_next_public_finnhub_api_key
-
+```
 ---
 
 ## ⚙️ Clone and Run Locally
