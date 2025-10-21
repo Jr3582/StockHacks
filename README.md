@@ -30,15 +30,22 @@ Make sure you have the following installed before cloning and running the projec
 Before running the app, make sure to create a `.env` file in the project root with the following variables:
 
 ```bash
-NODE_ENV='development'
+NODE_ENV='production'
+
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
-MONGODB_URI=your_mongodb_uri
+
+MONGODB_URI=your_mangodb_uri
+
 BETTER_AUTH_SECRET=your_better_auth_secret
+
 BETTER_AUTH_URL=http://localhost:3000
+
 GEMINI_API_KEY=your_gemini_api_key
-NODEMAILER_EMAIL=your_nodemailer_email
-NODEMAILER_PASSWORD=your_nodemailer_password
-NEXT_PUBLIC_FINNHUB_API_KEY=your_next_public_finnhub_api_key
+
+NODEMAILER_EMAIL=your_email
+NODEMAILER_PASSWORD=your_nodemailer_pass
+
+NEXT_PUBLIC_FINNHUB_API_KEY=your_finnhub_api_key
 ```
 ---
 
