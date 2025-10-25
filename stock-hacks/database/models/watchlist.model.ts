@@ -5,6 +5,11 @@ export interface WatchlistItem extends Document {
   symbol: string;
   company: string;
   addedAt: Date;
+  price?: number;
+  change?: number;
+  marketCap?: number | string;
+  peRatio?: number;
+  alert?: unknown;
 }
 
 const WatchlistSchema = new Schema<WatchlistItem>(
@@ -13,6 +18,11 @@ const WatchlistSchema = new Schema<WatchlistItem>(
     symbol: { type: String, required: true, uppercase: true, trim: true },
     company: { type: String, required: true, trim: true },
     addedAt: { type: Date, default: Date.now },
+    price: { type: Number, required: false },
+    change: { type: Number, required: false },
+    marketCap: { type: Schema.Types.Mixed, required: false },
+    peRatio: { type: Number, required: false },
+    alert: { type: Schema.Types.Mixed, required: false },
   },
   { timestamps: false }
 );

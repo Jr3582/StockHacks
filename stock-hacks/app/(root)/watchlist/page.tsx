@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/better-auth/auth";
-import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
+import { getWatchlistByEmail } from "@/lib/actions/watchlist.actions";
 import {
   Table,
   TableBody,
@@ -16,6 +16,62 @@ import {
 import {
     WATCHLIST_TABLE_HEADER,
 } from "@/lib/constants";
+import { Star } from "lucide-react";
+
+function fmtPrice(v: unknown) {
+    if (typeof v === 'number') return `$${v.toFixed(2)}`;
+    return '-';
+}
+
+// Compute percentage change in price since previous close for a symbol.
+// Uses the quote 'pc' (previous close) as the baseline instead of today's open.
+// Returns a number representing percent change (e.g. 2.34 for +2.34%), or null.
+async function fetchPriceChange(symbol: string) {
+    const key = process.env.FINNHUB_API_KEY || process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+    if (!key) return null;
+
+    try {
+      // fetch quote (contains previous close `pc` and current `c`)
+      const qRes = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${key}`);
+      const quote = await qRes.json();
+
+      const prevClose = typeof quote?.pc === 'number' && quote.pc > 0 ? quote.pc : null;
+      const currentPrice = typeof quote?.c === 'number' && quote.c > 0 ? quote.c : null;
+
+      if (prevClose && currentPrice && prevClose > 0) {
+        const pct = ((currentPrice - prevClose) / prevClose) * 100;
+        return pct;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('fetchSincePrevClosePriceChange error', symbol, err);
+      return null;
+    }
+}
+
+function fmtMarketCap(v: unknown) {
+    if (typeof v === 'number') {
+        if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(2)}B`;
+        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
+        return `${v}`;
+    }
+    if (typeof v === 'string') return v;
+    return '-';
+}
+
+function fmtPe(v: unknown) {
+    if (typeof v === 'number') return v.toFixed(2);
+    return '-';
+}
+
+function fmtPctChange(v: unknown) {
+  if (typeof v === 'number') {
+    const sign = v > 0 ? '+' : '';
+    return `${sign}${v.toFixed(2)}%`;
+  }
+  return '-';
+}
 
 export default async function WatchlistPage({params}: StockDetailsPageProps) {
     const { symbol } = await params;
@@ -24,28 +80,56 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
     const session = await auth.api.getSession({ headers: await headers() });
     const email = session?.user?.email ?? '';
 
-    const symbols = email ? await getWatchlistSymbolsByEmail(email) : [];
+  const items = email ? await getWatchlistByEmail(email) : [];
+  const pricePctArr = await Promise.all(items.map((it: any) =>
+    fetchPriceChange(String(it.symbol)).catch(() => null)
+  ));
+  const pricePctMap = new Map<string, number | null>();
+  items.forEach((it: any, idx: number) => pricePctMap.set(String(it.symbol).toUpperCase(), pricePctArr[idx] ?? null));
 
     return (
         <div>
             <h1 className="text-2xl text-gray-100 font-semibold mb-4 watchlist-title">Your Watchlist</h1>
-            <div className="flex min-h-screen p-4 md:p-6 lg:p-8">
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 w-full"> 
+            <div className="flex min-h-screen home-wrapper watchlist-wrapper">
+                <section className="w-full"> 
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                {WATCHLIST_TABLE_HEADER.slice(1).map((header) => (
+                                <TableHead className="w-[50px]"></TableHead>
+                                {WATCHLIST_TABLE_HEADER.slice(0).map((header) => (
                                     <TableHead className="w-[200px]" key={header}>{header}</TableHead>
                                 ))}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
+                          {items.length === 0 ? (
                             <TableRow>
-                                <TableCell className="font-medium">INV001</TableCell>
-                                <TableCell>Paid</TableCell>
-                                <TableCell>Credit Card</TableCell>
-                                <TableCell className="text-right">$250.00</TableCell>
+                              <TableCell colSpan={WATCHLIST_TABLE_HEADER.length} className="py-6 text-center text-gray-400">Your watchlist is empty.</TableCell>
                             </TableRow>
+                          ) : (
+                            items.map((it: any) => (
+                              <TableRow key={String(it.symbol)}>
+                                <TableCell>
+                                  <Star className="star-icon text-yellow-500 fill-current cursor-pointer" />
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  <Link
+                                    href={`/stocks/${String(it.symbol).toLowerCase()}`}
+                                    className="text-yellow-400 hover:underline hover:text-yellow-300 transition-colors duration-200">
+                                    {it.company}
+                                  </Link>
+                                </TableCell>
+                                <TableCell>{String(it.symbol).toUpperCase()}</TableCell>
+                                <TableCell>{fmtPrice(it.price)}</TableCell>
+                                <TableCell className={(() => {
+                                  const pct = pricePctMap.get(String(it.symbol).toUpperCase());
+                                  return typeof pct === 'number' ? (pct >= 0 ? 'text-green-400' : 'text-red-400') : '';
+                                })()}>{fmtPctChange(pricePctMap.get(String(it.symbol).toUpperCase()))}</TableCell>
+                                <TableCell>{fmtMarketCap(it.marketCap)}</TableCell>
+                                <TableCell>{fmtPe(it.peRatio)}</TableCell>
+                              </TableRow>
+                            ))
+                          )}
                         </TableBody>
                     </Table>
                 </section>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { CommandDialog, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command"
 import {Button} from "@/components/ui/button";
 import {Loader2,  Star,  TrendingUp} from "lucide-react";
@@ -13,6 +13,9 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(false)
   const [stocks, setStocks] = useState<StockWithWatchlistStatus[]>(initialStocks);
+  // Keep a local Set of symbols that are in the user's watchlist so the star
+  // UI can reflect DB state across dialog open/close/navigation.
+  const [watchlistSet, setWatchlistSet] = useState<Set<string>>(new Set());
 
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
@@ -34,7 +37,9 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
     setLoading(true)
     try {
         const results = await searchStocks(searchTerm.trim());
-        setStocks(results);
+        // map results to include isInWatchlist from our local set
+        const mapped = results.map(r => ({ ...r, isInWatchlist: watchlistSet.has(r.symbol?.toUpperCase?.() ?? r.symbol) }));
+        setStocks(mapped);
     } catch {
       setStocks([])
     } finally {
@@ -53,6 +58,73 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
     setSearchTerm("");
     setStocks(initialStocks);
   }
+
+  // Helper to toggle watchlist state and call API. Extracted for readability.
+  const toggleWatchlist = useCallback(async (e: any, targetStock: StockWithWatchlistStatus) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const original = targetStock.isInWatchlist;
+
+    // optimistic update
+    setStocks((prev) => prev.map((s) => (s.symbol === targetStock.symbol ? { ...s, isInWatchlist: !original } : s)));
+
+    try {
+      if (!original) {
+        const res = await fetch('/api/watchlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbol: targetStock.symbol, company: targetStock.name}),
+        });
+        if (!res.ok) throw new Error('Failed to add');
+        // update watchlist set
+        setWatchlistSet((prev) => {
+          const copy = new Set(prev);
+          copy.add(targetStock.symbol.toUpperCase());
+          return copy;
+        });
+      } else {
+        const res = await fetch('/api/watchlist', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbol: targetStock.symbol, company: targetStock.name}),
+        });
+        if (!res.ok) throw new Error('Failed to remove');
+        setWatchlistSet((prev) => {
+          const copy = new Set(prev);
+          copy.delete(targetStock.symbol.toUpperCase());
+          return copy;
+        });
+      }
+    } catch (err) {
+      console.error('watchlist toggle error', err);
+      // revert optimistic update on error
+      setStocks((prev) => prev.map((s) => (s.symbol === targetStock.symbol ? { ...s, isInWatchlist: original } : s)));
+    }
+  }, [setStocks]);
+  
+  useEffect(() => {
+    if (!open) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/watchlist');
+        if (!res.ok) return;
+        const data = await res.json();
+        const syms: string[] = Array.isArray(data?.symbols) ? data.symbols : [];
+        const set = new Set(syms.map(s => s?.toUpperCase()));
+        if (!mounted) return;
+        setWatchlistSet(set);
+        setStocks(prev => prev.map(s => ({ ...s, isInWatchlist: set.has(s.symbol?.toUpperCase?.() ?? s.symbol) })));
+      } catch (err) {
+        // ignore fetch errors
+        console.error('failed to load watchlist symbols', err);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [open]);
 
   return (
     <>
@@ -99,6 +171,17 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
                           {stock.symbol} | {stock.exchange } | {stock.type}
                         </div>
                       </div>
+                    <button
+                        aria-label={stock.isInWatchlist ? `Remove ${stock.symbol} from watchlist` : `Add ${stock.symbol} to watchlist`}
+                        title={stock.isInWatchlist ? `Remove ${stock.symbol} from watchlist` : `Add ${stock.symbol} to watchlist`}
+                        onClick={(e) => toggleWatchlist(e, stock)}
+                        className="ml-3">
+                        {stock.isInWatchlist ? (
+                          <Star className="star-icon text-yellow-500 fill-current cursor-pointer" />
+                        ) : (
+                          <Star className="star-icon cursor-pointer " />
+                        )}
+                    </button>
                     </Link>
                   </li>
               ))}
