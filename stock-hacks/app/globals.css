@@ -317,7 +317,13 @@
     @apply font-medium text-base
   }
   .add-alert {
-    @apply flex text-sm items-center whitespace-nowrap gap-1.5 px-3 w-fit py-2 text-yellow-600 border border-yellow-600/20 rounded font-medium bg-transparent hover:bg-transparent cursor-pointer transition-colors;
+    @apply inline-flex items-center justify-center
+          px-3 py-1.5 rounded-md text-sm font-medium
+          text-orange-400 bg-amber-900/60
+          hover:bg-amber-900
+          transition-colors
+          focus:outline-none focus:ring-2 focus:ring-orange-500/30
+          border-0;
   }
   .watchlist-news {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
@@ -486,4 +492,12 @@
 
 .scrollbar-hide-default::-webkit-scrollbar-thumb:hover {
   background-color: #9095A1;
+}
+
+.table-scroll {
+  @apply overflow-y-auto max-h-[500px] min-h-[500px];
+}
+
+.table-wrapper {
+  @apply w-full bg-gray-800 rounded-lg border border-gray-600/30 p-2;
 }

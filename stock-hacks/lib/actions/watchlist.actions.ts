@@ -112,17 +112,25 @@ export async function getWatchlistByEmail(email: string): Promise<Partial<import
 
           const quoteUrl = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(sym)}&token=${token}`;
           const profileUrl = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
+          const basicFinUrl = `${FINNHUB_BASE_URL}/stock/metric?symbol=${encodeURIComponent(sym)}&metric=all&token=${token}`;
 
-          const [quote, profile] = await Promise.all([
+          const [quote, profile, basic] = await Promise.all([
             fetchJSON<any>(quoteUrl, 60).catch(() => ({})),
             fetchJSON<any>(profileUrl, 3600).catch(() => ({})),
+            fetchJSON<any>(basicFinUrl, 3600).catch(() => ({})),
           ]);
 
           const price = typeof quote?.c === 'number' ? quote.c : undefined;
           const change = typeof quote?.d === 'number' ? quote.d : undefined;
           const marketCap = profile?.marketCapitalization ?? profile?.marketcap ?? undefined;
-          const peRatio = profile?.peBasicExclExtraTTM ?? profile?.pe ?? undefined;
-
+          const m = basic?.metric || {};
+          const peRatio =
+            typeof m.peBasicExclExtraTTM === 'number' ? m.peBasicExclExtraTTM :
+            typeof m.peInclExtraTTM       === 'number' ? m.peInclExtraTTM       :
+            typeof m.peTTM                === 'number' ? m.peTTM                :
+            typeof m.trailingPE           === 'number' ? m.trailingPE           :
+            undefined;
+            
           return {
             ...it,
             price,

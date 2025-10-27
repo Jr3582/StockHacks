@@ -1,5 +1,9 @@
 # 📈 Stock Hacks
 
+## 📝 To-do:
+- **implement alerts**
+- **update so watchlist gets updated in without refreshing page**
+
 ## 💡 Introduction
 **Stock Hacks** is a smart and automated **stock tracking platform** built with **Next.js** and **React**, designed to deliver **real-time stock insights** and **email alerts** directly to users.  
 
