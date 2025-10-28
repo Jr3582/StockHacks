@@ -2,6 +2,12 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/better-auth/auth";
 import { getWatchlistByEmail } from "@/lib/actions/watchlist.actions";
+import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import TradingViewWidget from "@/components/TradingViewWidget";
+import AlertCard from "@/components/AlertCard";
+import CreateAlertButton from "@/components/CreateAlertButton";
+import AlertsList from "@/components/AlertsList";
 import {
   Table,
   TableBody,
@@ -10,14 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
 import {
   TOP_STORIES_WIDGET_CONFIG,
   WATCHLIST_TABLE_HEADER,
 } from "@/lib/constants";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import TradingViewWidget from "@/components/TradingViewWidget";
 
 function fmtPrice(v: unknown) {
     if (typeof v === 'number') return `$${v.toFixed(2)}`;
@@ -72,7 +74,7 @@ function fmtPctChange(v: unknown) {
 }
 
 export default async function WatchlistPage({params}: StockDetailsPageProps) {
-  const { symbol } = await params;
+  const { symbol } = params;
   const scriptUrl = 'https://s3.tradingview.com/external-embedding/embed-widget-'
 
   const session = await auth.api.getSession({ headers: await headers() });
@@ -83,7 +85,10 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
     fetchPriceChange(String(it.symbol)).catch(() => null)
   ));
   const pricePctMap = new Map<string, number | null>();
+  
   items.forEach((it: any, idx: number) => pricePctMap.set(String(it.symbol).toUpperCase(), pricePctArr[idx] ?? null));
+
+  // alerts are rendered client-side (AlertsList)
 
     return (
         <div className="flex min-h-screen home-wrapper">
@@ -146,10 +151,13 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
                     <div className="md: col-span-1 xl:col-span-1">
                       <div className="flex items-center justify-between pb-4">
                         <h1 className="text-2xl text-gray-100 font-semibold watchlist-title">Alerts</h1>
-                        <Button className="flex justify-end bg-yellow-400 text-black hover:bg-yellow-300 shadow-md font-bold">Create Alerts</Button>
+                        <CreateAlertButton />
                       </div>
                         <div className="table-wrapper">
                           <div className="table-scroll">
+                            <div className="space-y-3">
+                              <AlertsList />
+                            </div>
 
                           </div>
                         </div>
