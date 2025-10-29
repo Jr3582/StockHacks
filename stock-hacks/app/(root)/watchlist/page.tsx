@@ -3,7 +3,9 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/better-auth/auth";
 import { getWatchlistByEmail } from "@/lib/actions/watchlist.actions";
 import { Star } from "lucide-react";
+import WatchlistStar from "@/components/WatchlistStar";
 import { Button } from "@/components/ui/button";
+import AddStockButton from "@/components/AddStockButton";
 import TradingViewWidget from "@/components/TradingViewWidget";
 import AlertCard from "@/components/AlertCard";
 import CreateAlertButton from "@/components/CreateAlertButton";
@@ -52,8 +54,8 @@ async function fetchPriceChange(symbol: string) {
 
 function fmtMarketCap(v: unknown) {
     if (typeof v === 'number') {
-        if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(2)}B`;
-        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}M`;
+        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}T`;
+        if (v >= 1_000) return `${(v / 1_000).toFixed(2)}B`;
         return `${v}`;
     }
     if (typeof v === 'string') return v;
@@ -96,17 +98,17 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
                     <div className="md-col-span xl:col-span-2">
                       <div className="flex items-center justify-between pb-4">
                         <h1 className="text-2xl text-gray-100 font-semibold watchlist-title">Your Watchlist</h1>
-                        <Button className="flex justify-end bg-yellow-400 text-black hover:bg-yellow-300 shadow-md font-bold">Add Stock</Button>
+                        <AddStockButton />
                       </div>
                       <div className="table-wrapper">
                         <div className="table-scroll">
                           <Table>
                               <TableHeader>
                                   <TableRow>
-                                      <TableHead className="w-[50px]"></TableHead>
-                                      {WATCHLIST_TABLE_HEADER.slice(0).map((header) => (
-                                          <TableHead className="w-[200px]" key={header}>{header}</TableHead>
-                                      ))}
+                                    <TableHead className="w-[50px]"></TableHead>
+                                    {WATCHLIST_TABLE_HEADER.slice(0).map((header) => (
+                                        <TableHead className="w-[200px]" key={header}>{header}</TableHead>
+                                    ))}
                                   </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -118,7 +120,7 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
                                   items.map((it: any) => (
                                     <TableRow key={String(it.symbol)}>
                                       <TableCell>
-                                        <Star className="star-icon text-yellow-500 fill-current cursor-pointer" />
+                                        <WatchlistStar symbol={String(it.symbol).toUpperCase()} company={it.company} initialInWatchlist={true} />
                                       </TableCell>
                                       <TableCell className="font-medium">
                                         <Link

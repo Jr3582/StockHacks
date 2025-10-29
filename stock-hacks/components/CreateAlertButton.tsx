@@ -126,14 +126,16 @@ export default function CreateAlertButton() {
       </Button>
 
       <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="className=space-y-5">
         <DialogHeader>
-          <DialogTitle>Create Alert</DialogTitle>
+          <DialogTitle>
+            Create Alert
+          </DialogTitle>
           <DialogDescription>
             {/* Empty for now - we'll add form fields later */}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-7 pt-4">
+          <div className="grid gap-7 pt-4">
             <div className="grid gap-1">
               <Label htmlFor="name-1">Alert Name: </Label>
               <Input id="name-1" {...register("name")} defaultValue="AAPL Stock Alert" />
@@ -143,49 +145,48 @@ export default function CreateAlertButton() {
               <Input id="stock-id-1" {...register("username")} defaultValue="AAPL" />
             </div>
             <div className="grid gap-1">
-                <Label htmlFor="condition-1">Alert Type: </Label>
-                <SelectField
-                    name={"alertType"}
-                    label={""}
-                    placeholder={"Select type"}
-                    options={[{ value: "price", label: "Price" }, { value: "percentage", label: "Percentage" }]}
-                    control={control}
-                />
+              <Label htmlFor="condition-1">Alert Type: </Label>
+              <SelectField
+                name={"alertType"}
+                label={""}
+                placeholder={"Select type"}
+                options={[{ value: "price", label: "Price" }, { value: "percentage", label: "Percentage" }]}
+                control={control}
+              />
             </div>
             <div className="grid gap-1">
-                <Label htmlFor="condition-1">Condition: </Label>
-                <SelectField 
-                    name={"condition"}
-                    label={""}
-                    placeholder={"Select condition"}
-                    options={[{ value: "greater_than", label: "Greater Than (>)" }, { value: "less_than", label: "Less Than (<)" }, { value: "equal_to", label: "Equal to (=)" }, { value: "less_than_or_equal_to", label: "Less Than or Equal to (≤)" }, { value: "greater_than_or_equal_to", label: "Greater Than or Equal to (≥)" }]}
-                    control={control}
-                />
+              <Label htmlFor="condition-1">Condition: </Label>
+              <SelectField 
+                name={"condition"}
+                label={""}
+                placeholder={"Select condition"}
+                options={[{ value: "greater_than", label: "Greater Than (>)" }, { value: "less_than", label: "Less Than (<)" }, { value: "equal_to", label: "Equal to (=)" }, { value: "less_than_or_equal_to", label: "Less Than or Equal to (≤)" }, { value: "greater_than_or_equal_to", label: "Greater Than or Equal to (≥)" }]}
+                control={control}
+              />
             </div>
-      <div className="grid gap-1">
-        <Label htmlFor="value-1">Threshold Value: </Label>
-        <Input id="value-1" type="number" step="0.01" {...register('value', { valueAsNumber: true })} defaultValue={100} />
-      </div>
             <div className="grid gap-1">
-                <Label htmlFor="frequency-1">Frequency: </Label>
-                <SelectField 
-                    name={"frequency"}
-                    label={""}
-                    placeholder={"Select frequency"}
-                    options={[{ value: "every_hour", label: "Every Hour" }, { value: "daily", label: "Daily" }, { value: "weekly", label: "Weekly" }, { value: "monthly", label: "Monthly" }]}
-                    control={control}
-                />
+              <Label htmlFor="value-1" className="grid gap-1">Threshold Value: </Label>
+              <Input id="value-1" type="number" step="0.01" {...register('value', { valueAsNumber: true })} defaultValue={100} />
             </div>
-      <div className="grid gap-1">
-        <Button type="submit" className="w-full p-3 text-black bg-yellow-400 hover:bg-yellow-300">
-          Create Alert
-        </Button>
-      </div>
+            <div className="grid gap-1">
+              <Label htmlFor="frequency-1">Frequency: </Label>
+              <SelectField 
+                name={"frequency"}
+                label={""}
+                placeholder={"Select frequency"}
+                options={[{ value: "every_hour", label: "Every Hour" }, { value: "daily", label: "Daily" }, { value: "weekly", label: "Weekly" }, { value: "monthly", label: "Monthly" }]}
+                control={control}
+              />
+            </div>
+            <div className="grid gap-1">
+              <Button type="submit" className="w-full p-3 text-black bg-yellow-400 hover:bg-yellow-300">
+                Create Alert
+              </Button>
+            </div>
           </div>
-
-        <DialogFooter>
-          <DialogClose />
-        </DialogFooter>
+          <DialogFooter>
+            <DialogClose/>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
