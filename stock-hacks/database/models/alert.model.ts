@@ -5,6 +5,7 @@ export interface AlertItem extends Document {
   company: string;
   symbol: string;
   alertName: string;
+  lastSentAt?: Date;
   condition?: string;
   frequency?: string;
   alertType?: string;
@@ -22,6 +23,7 @@ const AlertSchema = new Schema<AlertItem>(
     alertName: { type: String, required: true },
     condition: { type: String, required: false },
     frequency: { type: String, required: false },
+    lastSentAt: { type: Date, required: false },
   alertType: { type: String, required: false },
   value: { type: Number, required: false },
     price: { type: Number, required: false },

@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { NEWS_SUMMARY_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from './template';
+import { NEWS_SUMMARY_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE, STOCK_ALERT_UPPER_EMAIL_TEMPLATE, STOCK_ALERT_LOWER_EMAIL_TEMPLATE } from './template';
 
 export const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -40,3 +40,27 @@ export const sendNewsSummaryEmail = async (
 
     await transporter.sendMail(mailOptions);
 };
+
+export const sendStockAlertEmail = async (
+    { email, symbol, company, currentPrice, targetPrice, direction }: { email: string; symbol: string; company?: string; currentPrice: number | string; targetPrice: number | string; direction: 'upper' | 'lower' }
+): Promise<void> => {
+    const timestamp = new Date().toLocaleString();
+    const template = direction === 'upper' ? STOCK_ALERT_UPPER_EMAIL_TEMPLATE : STOCK_ALERT_LOWER_EMAIL_TEMPLATE;
+
+    const htmlTemplate = template
+        .replace(/{{symbol}}/g, String(symbol))
+        .replace(/{{company}}/g, String(company ?? ''))
+        .replace(/{{currentPrice}}/g, String(currentPrice))
+        .replace(/{{targetPrice}}/g, String(targetPrice))
+        .replace(/{{timestamp}}/g, String(timestamp));
+
+    const mailOptions = {
+        from: `StockHacks Alerts`,
+        to: email,
+        subject: `Stock Alert: ${symbol} ${direction === 'upper' ? 'above' : 'below'} ${targetPrice}`,
+        text: `${symbol} hit your alert target of ${targetPrice}. Current price: ${currentPrice}`,
+        html: htmlTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+}

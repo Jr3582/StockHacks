@@ -93,7 +93,7 @@ export default function AddStockButton({ label = 'Add Stock', initialStocks = []
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="flex justify-end bg-yellow-400 text-black hover:bg-yellow-300 shadow-md font-bold">
+      <Button onClick={() => setOpen(true)} className="flex justify-end bg-yellow-400 text-black hover:bg-yellow-300 shadow-md font-bold cursor-pointer">
         {label}
       </Button>
 

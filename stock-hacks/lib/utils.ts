@@ -137,3 +137,34 @@ export const getFormattedTodayDate = () => new Date().toLocaleDateString('en-US'
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+/**
+ * Evaluate the alert condition between current price and target price.
+ * Supported conditions: greater_than, greater_than_or_equal_to, less_than,
+ * less_than_or_equal_to, equal_to
+ */
+export const evaluateCondition = (
+  condition: string | undefined,
+  currentPriceRaw: number | string | undefined,
+  targetPriceRaw: number | string | undefined
+): boolean => {
+  if (!condition) return false;
+  const current = Number(currentPriceRaw);
+  const target = Number(targetPriceRaw);
+  if (!Number.isFinite(current) || !Number.isFinite(target)) return false;
+
+  switch (condition) {
+    case 'greater_than':
+      return current > target;
+    case 'greater_than_or_equal_to':
+      return current >= target;
+    case 'less_than':
+      return current < target;
+    case 'less_than_or_equal_to':
+      return current <= target;
+    case 'equal_to':
+      return current === target;
+    default:
+      return false;
+  }
+};

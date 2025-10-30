@@ -9,6 +9,7 @@ import AddStockButton from "@/components/AddStockButton";
 import TradingViewWidget from "@/components/TradingViewWidget";
 import AlertCard from "@/components/AlertCard";
 import CreateAlertButton from "@/components/CreateAlertButton";
+import AddAlertButton from "@/components/AddAlertButton";
 import AlertsList from "@/components/AlertsList";
 import {
   Table,
@@ -56,6 +57,7 @@ function fmtMarketCap(v: unknown) {
     if (typeof v === 'number') {
         if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(2)}T`;
         if (v >= 1_000) return `${(v / 1_000).toFixed(2)}B`;
+        if (v >= 1) return `${(v).toFixed(2)}M`;
         return `${v}`;
     }
     if (typeof v === 'string') return v;
@@ -138,9 +140,7 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
                                       <TableCell>{fmtMarketCap(it.marketCap)}</TableCell>
                                       <TableCell>{fmtPe(it.peRatio)}</TableCell>
                                       <TableCell>
-                                        <Button className="add-alert">
-                                          Add Alert
-                                        </Button>
+                                        <AddAlertButton symbol={String(it.symbol).toUpperCase()} company={it.company} />
                                       </TableCell>
                                     </TableRow>
                                   ))
@@ -160,7 +160,6 @@ export default async function WatchlistPage({params}: StockDetailsPageProps) {
                             <div className="space-y-3">
                               <AlertsList />
                             </div>
-
                           </div>
                         </div>
                     </div> 
